@@ -184,14 +184,27 @@ def VGG19(include_top=True, weights='imagenet',
 
 
 if __name__ == '__main__':
-    model = VGG19(include_top=True, weights='imagenet')
+    model_decoder = VGG19(include_top=True, weights='imagenet') #Change to decoder model
+    model_VGG_2 = VGG19(include_top=True, weights='imagenet')
 
-    img_path = 'cat.jpg'
-    img = image.load_img(img_path, target_size=(224, 224))
-    x = image.img_to_array(img)
-    x = np.expand_dims(x, axis=0)
-    x = preprocess_input(x)
-    print('Input image shape:', x.shape)
+    inputs = Input(shape=(784,))
+    decode_out = model_decoder()(inputs)
+    vgg2_out = model_VGG_2()(decode_out)
 
-    preds = model.predict(x)
-print('Predicted:', decode_predictions(preds))
+    model = Model(inputs=[inputs], outputs=[decode_out, vgg2_out])
+    print model.summary()
+    # model_VGG_1 = VGG19(include_top=False, weights='imagenet')
+
+#     img_path = 'cat.jpg'
+#     img = image.load_img(img_path, target_size=(224, 224))
+#     x = image.img_to_array(img)
+#     x = np.expand_dims(x, axis=0)
+#     x = preprocess_input(x)
+#     print('Input image shape:', x.shape)
+
+#     main_input = Input(shape=(100,), dtype='int32', name='main_input')
+#     VGG_1_out = VGG_1.predict(main_input)
+
+
+
+# print('Predicted:', decode_predictions(preds))
