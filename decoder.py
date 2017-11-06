@@ -23,11 +23,6 @@ from keras.applications.imagenet_utils import preprocess_input
 from keras.applications.imagenet_utils import _obtain_input_shape
 from keras.engine.topology import get_source_inputs
 
-
-WEIGHTS_PATH = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg19_weights_tf_dim_ordering_tf_kernels.h5'
-WEIGHTS_PATH_NO_TOP = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5'
-
-
 def VGG19(include_top=True, weights='imagenet',
           input_tensor=None, input_shape=None,
           pooling=None,
@@ -101,33 +96,33 @@ def VGG19(include_top=True, weights='imagenet',
     # Block 1
     x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv1')(img_input)
     x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv2')(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(x)
+    x = UpSampling2D((2, 2), strides=(2, 2), name='block1_pool')(x)
 
     # Block 2
     x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv1')(x)
     x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv2')(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(x)
+    x = UpSampling2D((2, 2), strides=(2, 2), name='block2_pool')(x)
 
     # Block 3
     x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv1')(x)
     x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv2')(x)
     x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv3')(x)
     x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv4')(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(x)
+    x = UpSampling2D((2, 2), strides=(2, 2), name='block3_pool')(x)
 
     # Block 4
     x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv1')(x)
     x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv2')(x)
     x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv3')(x)
     x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv4')(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(x)
+    x = UpSampling2D((2, 2), strides=(2, 2), name='block4_pool')(x)
 
     # Block 5
     x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv1')(x)
     x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv2')(x)
     x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv3')(x)
     x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv4')(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
+    x = UpSampling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
 
     if include_top:
         # Classification block
@@ -184,27 +179,14 @@ def VGG19(include_top=True, weights='imagenet',
 
 
 if __name__ == '__main__':
-    model_decoder = VGG19(include_top=True, weights='imagenet') #Change to decoder model
-    model_VGG_2 = VGG19(include_top=True, weights='imagenet')
+    model = VGG19(include_top=False, weights='imagenet',input_shape=(224,224,3))
 
-    inputs = Input(shape=(784,))
-    decode_out = model_decoder()(inputs)
-    vgg2_out = model_VGG_2()(decode_out)
+    img_path = 'cat.jpg'
+    img = image.load_img(img_path, target_size=(224, 224))
+    x = image.img_to_array(img)
+    x = np.expand_dims(x, axis=0)
+    x = preprocess_input(x)
+    print('Input image shape:', x.shape)
 
-    model = Model(inputs=[inputs], outputs=[decode_out, vgg2_out])
-#    print model.summary()
-    # model_VGG_1 = VGG19(include_top=False, weights='imagenet')
-
-#     img_path = 'cat.jpg'
-#     img = image.load_img(img_path, target_size=(224, 224))
-#     x = image.img_to_array(img)
-#     x = np.expand_dims(x, axis=0)
-#     x = preprocess_input(x)
-#     print('Input image shape:', x.shape)
-
-#     main_input = Input(shape=(100,), dtype='int32', name='main_input')
-#     VGG_1_out = VGG_1.predict(main_input)
-
-
-
-# print('Predicted:', decode_predictions(preds))
+    preds = model.predict(x)
+    print('Predicted:', decode_predictions(preds))
