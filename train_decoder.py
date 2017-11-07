@@ -22,6 +22,9 @@ from keras.applications.imagenet_utils import decode_predictions
 from keras.applications.imagenet_utils import preprocess_input
 from keras.applications.imagenet_utils import _obtain_input_shape
 from keras.engine.topology import get_source_inputs
+import sys
+import os
+from keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
 
 
 WEIGHTS_PATH = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg19_weights_tf_dim_ordering_tf_kernels.h5'
@@ -307,6 +310,31 @@ def DECODER(include_top=True, weights='imagenet',
     return model
 
 
+
+def MakeDataset(train_data_dir, num):
+    X, Y=[], []
+    i=0
+    for subdir, dirs, files in os.walk(train_data_dir):
+        for file in files:
+            i+=1
+            filepath = subdir + os.sep + file
+            # try:
+            img = load_img(filepath, target_size=(224, 224))
+            x = img_to_array(img)  # this is a Numpy array with shape (3, 150, 150)
+            x = x * (1.0/255)
+            x = preprocess_input(x)
+            X.append(x)  # this is a Numpy array with shape (1, 3, 150, 150)
+
+            # except:
+            #     print "cant read", file
+            #     try:
+            #         pass
+            #     except:
+            #         pass
+            #     pass
+            if(i == num):
+                return np.array(X)
+
 if __name__ == '__main__':
     model_decoder = DECODER(include_top=False, weights=None, input_shape=(7, 7, 512)) #Change to decoder model
     model_VGG_2 = VGG19(include_top=False, weights='imagenet', input_shape=(224, 224, 3) , name="vgg19_2")
@@ -315,7 +343,7 @@ if __name__ == '__main__':
         layer.trainable = False
     print(model_VGG_2.summary())
     print(model_decoder.summary())
-    inputs = Input(shape=(7, 7, 512))
+    inputs = Input(shape=(7, 7, 512) ,name='input')
     decode_out = model_decoder(inputs)
     vgg2_out = model_VGG_2(decode_out)
 
@@ -329,17 +357,22 @@ if __name__ == '__main__':
 
 
     print(model.summary())
+
+    TRAIN_DATA_DIR = "../train2017"
+    TRAIN_SAMPLES = 20
+    X_train = MakeDataset(TRAIN_DATA_DIR, TRAIN_SAMPLES)
+
+    print("Predicting VGG_1 output")
     model_VGG_1 = VGG19(include_top=False, weights='imagenet', name="vgg19_1")
 
-    img_path = 'style.jpg'
-    img = image.load_img(img_path, target_size=(224, 224))
-    x = image.img_to_array(img)
-    x = np.expand_dims(x, axis=0)
-    x = preprocess_input(x)
-    print('Input image shape:', x.shape)
+    X_train_VGG = model_VGG_1.predict(X_train)
+    print("Predicted")
+    print(X_train_VGG.shape)
 
-    VGG_1_out = model_VGG_1.predict(x)
-    print(VGG_1_out)
+    print("Training decoder")
+    model.fit({'input' : X_train_VGG},
+    	{'decoder': X_train, 'vgg19_2': X_train_VGG},
+    	epochs=50, batch_size=32)
 
 
 
