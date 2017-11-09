@@ -193,7 +193,7 @@ def VGG19(include_top=True, weights='imagenet',
 
 
 if __name__ == '__main__':
-    model = VGG19(include_top=False, weights='imagenet', input_shape=(3, 224, 224))
+    model = VGG19(include_top=False, weights='imagenet', input_shape=(224, 224, 3))
 
     img_path = 'content.png'
     img = image.load_img(img_path, target_size=(224, 224))
