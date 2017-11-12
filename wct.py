@@ -6,31 +6,41 @@ from numpy import linalg as LA
 
 def wct(fc, fs):
 	print fc.shape
-	fc = fc - fc.mean(1).mean(1)[:,None,None] #Taking mean along axis = 1
-	c_u, c_e, c_v = LA.svd((fc.dot(fc.transpose())))
+	fc = fc.reshape(512*49)
+	fc = fc - fc.mean() #Taking mean along axis = 1
+	fc = fc.reshape((fc.size, 1))
+	fc_covariance_mat = np.matmul(fc, fc.transpose())
+	c_u, c_e, c_v = LA.svd((fc_covariance_mat))
 
-	for i in range(fc.shape[0]):
+	print c_e.shape, c_e.size
+	for i in range(c_e.size):
+		print i,
 		if(c_e[i] < 0.00001):
 			end_c = i
 			break
 
-	c_d = (c_e[0:k_c]).power(-0.5)
-	whiten = c_v[:,0:end_c]*np.diag(c_d)*c_v[:,0:end_c].transpose()
-	fc_cap = whiten * fc
+	print "DONE1"
+	c_d = np.power(c_e[0:end_c], -0.5)
+	whiten = np.matmul( np.matmul(c_v[:,0:end_c], np.diag(c_d)), c_v[:,0:end_c].transpose() )
+	fc_cap = np.matmul(whiten, fc)
+	#Should add mean of fc to fc
 
-	# style_mean = fs.mean(1) #Taking mean along axis = 1
-	# fs = fs - style_mean
-	# s_u, s_e, s_v = LA.svd((fs*fs.transpose())/(fs.shape[0]-1))
+	print "DONE2"
+	fs = fs.reshape(512*49)
+	style_mean = fs.mean() #Taking mean along axis = 1
+	fs = fs - style_mean
+	fs = fs.reshape(fs.size, 1)
+	fs_covariance_mat = np.matmul(fs, fs.transpose())
+	s_u, s_e, s_v = LA.svd((fs_covariance_mat))
 
-	# for i in range(fs.shape[0]):
-	# 	if(s_e[i] < 0.00001):
-	# 		end_s = i
-	# 		break
+	print "DONE3"
+	for i in range(s_e.shape):
+		if(s_e[i] < 0.00001):
+	 		end_s = i
+	 		break
 
-	# s_d = (s_e[0:k_s]).power(0.5)
-	# coloring = s_v[:,0:k_s]*np.diag(s_d)*s_v[:,0:k_s].transpose()*fc_cap
-	# target = coloring + style_mean
-	# return target	
-
-
-
+	s_d = np.power( s_e[0:end_s], 0.5 )
+	coloring = np.matmul(np.matmul( np.matmul(s_v[:,0:end_s], np.diag(s_d)), s_v[:,0:end_s].transpose()), fc_cap)
+	target = coloring + style_mean
+	print "DONE"
+	return target
