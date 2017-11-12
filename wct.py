@@ -1,6 +1,6 @@
 import keras
 import numpy as np
-from numpy import linalg as LA
+from scipy import linalg as LA
 
 
 
@@ -26,7 +26,7 @@ def wct(fc, fs):
 	#Should add mean of fc to fc
 
 	print "DONE2"
-	fs = fs.reshape(512*49)
+	fs = fs.reshape( 512*49 )
 	style_mean = fs.mean() #Taking mean along axis = 1
 	fs = fs - style_mean
 	fs = fs.reshape(fs.size, 1)

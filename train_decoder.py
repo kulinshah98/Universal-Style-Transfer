@@ -350,7 +350,6 @@ if __name__ == '__main__':
     model = Model(inputs=[inputs], outputs=[decode_out, vgg2_out])
 
 
-
     model.compile(optimizer='rmsprop',
               loss={'decoder': 'mean_squared_error', 'vgg19_2': 'mean_squared_error'},
               loss_weights={'decoder': 1., 'vgg19_2': 1.})
