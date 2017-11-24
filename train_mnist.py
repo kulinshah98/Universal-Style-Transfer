@@ -2,11 +2,24 @@ from keras.datasets import mnist
 from keras.layers import Input, Dense, Conv2D, MaxPooling2D, UpSampling2D
 from keras.models import Model
 from keras import backend as K
-from sklearn.metrics import accuracy_score
+#from sklearn.metrics import accuracy_score
 import numpy as np
+import sys
+import cPickle
+import os
 
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   
+os.environ["CUDA_VISIBLE_DEVICES"]="1"  #Replace i with the number of the GPU you want to use (typically 0,1,2,3) 
 
-(x_train, y_train), (x_test, y_test ) = mnist.load_data()
+import gzip
+f = gzip.open('mnist.pkl.gz', 'rb')
+if sys.version_info < (3,):
+    data = cPickle.load(f)
+else:
+    data = cPickle.load(f, encoding='bytes')
+f.close()
+
+(x_train, y_train), (x_test, y_test ) = data
 
 x_train = x_train.astype('float32') / 255.
 x_test = x_test.astype('float32') / 255.
@@ -43,6 +56,6 @@ model.compile(optimizer='adam',
 
 print y_train.shape
 model.fit(x_train, x_train,
-	epochs=100, batch_size=32, verbose=1)
+	epochs=3, batch_size=32, verbose=1)
 
 model.save_weights("model.h5")

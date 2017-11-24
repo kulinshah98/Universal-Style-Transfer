@@ -2,7 +2,7 @@ from keras.datasets import mnist
 from keras.layers import Input, Dense, Conv2D, MaxPooling2D, UpSampling2D
 from keras.models import Model
 from keras import backend as K
-from sklearn.metrics import accuracy_score
+#from sklearn.metrics import accuracy_score
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -25,7 +25,7 @@ x = Conv2D(8, (3, 3), activation='relu', padding='same')(x)
 encoded1 = MaxPooling2D((2, 2), padding='same')(x)
 
 #model1 = Model(inputs=[input_img], outputs=[encoded1], name="encoder1")
-# at this point the representation is (4, 4, 8) i.e. 128-dimensional
+#at this point the representation is (4, 4, 8) i.e. 128-dimensional
 
 x = Conv2D(8, (3, 3), activation='relu', padding='same')(encoded1)
 x = UpSampling2D((2, 2))(x)
@@ -47,3 +47,4 @@ ans_img = model.predict( x_test[0].reshape(1, 28, 28, 1) )
 plt.figure(figsize=(28, 28))
 plt.imshow(ans_img.reshape(28, 28))
 plt.show()
+f the dubious nature of our so-called "knowledge."
